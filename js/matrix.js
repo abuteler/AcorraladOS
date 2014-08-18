@@ -31,8 +31,29 @@ define(function(){
             this.state.push(row);
         }
     }
+    Matrix.prototype.voidLength = function(rowIndex){
+        var counting = false,
+            length = 0;
+        $.each(this.state[rowIndex], function(index, col) {
+            if (col === this.status['void']) {
+                counting = true;
+                length += 1;
+            } else if (counting && (col === this.status['lane'] || col === this.status['conquering'])) {
+                return false;
+            };
+        });
+        return length;
+    }
     Matrix.prototype.layFoundation = function(){
         console.log('laying foundation!');
+        /*$.each(this.state, function(rowIndex, row) {
+            $.each(row, function(colIndex, col){
+                if (col === this.status['conquering']) {
+                    col = this.status['lane'];
+                    if (index >= this.cols) {};
+                }
+            });
+        });*/
     }
     return Matrix;
 });

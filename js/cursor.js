@@ -5,10 +5,7 @@ define(function(){
         this.color = null;
         this.acceleration = null;
         this.status = {
-            'toppest': null,
-            'leftest': null,
-            'rightest': null,
-            'bottomest': null
+            'conquering': null
         };
     }
     Cursor.prototype.init = function(size, x, color){
@@ -20,55 +17,59 @@ define(function(){
         }
         this.color = color;
         this.status = {
-            'toppest': true,
-            'leftest': false,
-            'rightest': false,
-            'bottomest': false
+            'conquering': {
+                'start': {
+                    x: null,
+                    y: null
+                },
+                'end': {
+                    x: null,
+                    y: null
+                }
+            }
         };
     }
-    Cursor.prototype.moveLeft = function(matrix){
-        if (matrix.state[this.position.y][this.position.x-1] === matrix.status['lane']) {
-            //check if we're coming back to the lane from conquering
-            if (matrix.state[this.position.y][this.position.x] === matrix.status['conquering']) {
-                console.log('success!');
-                this.position.x -= 1;
-                matrix.layFoundation();
-            } else {
-                //regular movement
-                this.position.x -= 1;
+    Cursor.prototype.updatePosition = function(matrix, newX, newY){
+        if (matrix.state[newY]) {
+            switch (matrix.state[newY][newX]) {
+                case matrix.status['lane']:
+                    //check if we're coming back to the lane from conquering
+                    if (matrix.state[this.position.y][this.position.x] === matrix.status['conquering']) {
+                        console.log('success!');
+                        matrix.layFoundation();
+                        //@2do: reset cursor.status
+                    }
+                    this.position.x = newX;
+                    this.position.y = newY;
+                    break;
+                case matrix.status['void']:
+                    //check if we´re starting to conquer
+                    if (this.status.conquering.start.x === null) {
+                        this.status.conquering.start.x = this.position.x;
+                        this.status.conquering.start.y = this.position.y;
+                    };
+                    this.position.x = newX;
+                    this.position.y = newY;
+                    matrix.state[newY][newX] = matrix.status['conquering'];
+                    break;
+                case matrix.status['conquering']:
+                    console.log('death by crash');
+                    break;
             }
-        } else if (matrix.state[this.position.y][this.position.x-1] === matrix.status['void']){
-            matrix.state[this.position.y][this.position.x-1] = matrix.status['conquering'];
-            this.position.x -= 1;
-        }
+        };
         return matrix;
+    }
+    Cursor.prototype.moveLeft = function(matrix){
+        return this.updatePosition(matrix, this.position.x-1, this.position.y);
     }
     Cursor.prototype.moveRight = function(matrix){
-        if (matrix.state[this.position.y][this.position.x+1] === matrix.status['lane']){
-            this.position.x += 1;
-        } else if (matrix.state[this.position.y][this.position.x+1] === matrix.status['void']){
-            matrix.state[this.position.y][this.position.x+1] = matrix.status['conquering'];
-            this.position.x += 1;
-        }
-        return matrix;
+        return this.updatePosition(matrix, this.position.x+1, this.position.y);
     }
     Cursor.prototype.moveUp = function(matrix){
-        if (matrix.state[this.position.y-1] && matrix.state[this.position.y-1][this.position.x] === matrix.status['lane']){
-            this.position.y -= 1;
-        } else if (matrix.state[this.position.y-1] && matrix.state[this.position.y-1][this.position.x] === matrix.status['void']) {
-            matrix.state[this.position.y-1][this.position.x] = matrix.status['conquering'];
-            this.position.y -= 1;
-        }
-        return matrix;
+        return this.updatePosition(matrix, this.position.x, this.position.y-1);
     }
     Cursor.prototype.moveDown = function(matrix){
-        if (matrix.state[this.position.y+1] && matrix.state[this.position.y+1][this.position.x] === matrix.status['lane']){
-            this.position.y += 1;
-        } else if (matrix.state[this.position.y+1] && matrix.state[this.position.y+1][this.position.x] === matrix.status['void']) {
-            matrix.state[this.position.y+1][this.position.x] = matrix.status['conquering'];
-            this.position.y += 1;
-        }
-        return matrix;
+        return this.updatePosition(matrix, this.position.x, this.position.y+1);
     }
     return Cursor;
 });
