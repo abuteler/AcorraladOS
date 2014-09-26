@@ -79,6 +79,6 @@ function($, Cursor, Matrix, Canvas){
     }
 
     $(document).ready(function(){
-        OS.init(9, 'rgb(0, 255, 0)', 40, 70, 'rgb(90,0,90)', 'rgb(45,0,45)');
+        OS.init(9, 'rgb(255, 255, 0)', 40, 70, 'rgb(120,120,0)', 'rgb(0,0,0)');
     });
 });
