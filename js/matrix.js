@@ -44,6 +44,36 @@ define(function(){
         });
         return length;
     }
+    Matrix.prototype.updateRow = function(rowIndex){
+        var conqueringCoords = []
+            voidLeft = null,
+            voidRight = null;
+        //check for conquering coords
+        $.each(this.state[rowIndex], function(index, col) {
+            if (col === this.status['conquering']) {
+                conqueringCoords.push(index);
+            };
+        });
+        if (conqueringCoords.length > 1) {
+            for (var i = conqueringCoords[0]; i <= conqueringCoords[1]; i++) {
+                if(i == conqueringCoords[0] || i === conqueringCoords[1]){
+                    this.state[rowIndex][i] = this.status['lane'];
+                } else {
+                    this.state[rowIndex][i] = this.status['conquered'];
+                }
+            }
+        } else {
+            voidLeft = this.voidLength(rowIndex, col, 'left');
+            voidRight = this.voidLength(rowIndex, col, 'right');
+            if(voidLeft < voidRight) {
+
+            } else if(voidRight < voidLeft){
+
+            } else {
+                console.log('@2do: defer');
+            }
+        }
+    }
     Matrix.prototype.layFoundation = function(){
         console.log('laying foundation!');
         /*$.each(this.state, function(rowIndex, row) {
