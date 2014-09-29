@@ -52,6 +52,9 @@ define(function(){
                     this.position.y = newY;
                     matrix.state[newY][newX] = matrix.status['conquering'];
                     break;
+                case matrix.status['conquered']:
+                    //ignores movement request
+                    break;
                 case matrix.status['conquering']:
                     console.log('death by crash');
                     break;
