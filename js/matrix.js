@@ -31,40 +31,51 @@ define(function(){
             this.state.push(row);
         }
     }
-    Matrix.prototype.voidLength = function(rowIndex){
-        var counting = false,
-            length = 0;
-        $.each(this.state[rowIndex], function(index, col) {
-            if (col === this.status['void']) {
-                counting = true;
-                length += 1;
-            } else if (counting && (col === this.status['lane'] || col === this.status['conquering'])) {
-                return false;
-            };
-        });
+    Matrix.prototype.voidLength = function(rowIndex, colStart, direction){
+        var colIndex = colStart,
+            length = 0;        
+        do {
+            switch (direction) {
+                case 'left':
+                    colIndex -= 1;
+                    break;
+                case 'right':
+                    colIndex += 1;
+                    break;
+            }
+            length += 1;
+        } while (this.state[rowIndex][colIndex] = this.status["void"]);
         return length;
     }
     Matrix.prototype.updateRow = function(rowIndex){
-        var conqueringCoords = []
+        var that = this,
+            conqueringCoords = [],
             voidLeft = null,
             voidRight = null;
         //check for conquering coords
         $.each(this.state[rowIndex], function(index, col) {
-            if (col === this.status['conquering']) {
+            if (col === that.status['conquering']) {
                 conqueringCoords.push(index);
             };
         });
         if (conqueringCoords.length > 1) {
-            for (var i = conqueringCoords[0]; i <= conqueringCoords[1]; i++) {
-                if(i == conqueringCoords[0] || i === conqueringCoords[1]){
-                    this.state[rowIndex][i] = this.status['lane'];
-                } else {
-                    this.state[rowIndex][i] = this.status['conquered'];
+            if(conqueringCoords.length = 2) {
+                for (var i = conqueringCoords[0]; i <= conqueringCoords[1]; i++) {
+                    if(i == conqueringCoords[0] || i === conqueringCoords[1]){
+                        this.state[rowIndex][i] = this.status['lane'];
+                    } else {
+                        this.state[rowIndex][i] = this.status['conquered'];
+                    }
                 }
+            } else {
+                //I assume it's the bottom line of conquering cells
+                $.each(conqueringCoords, function(index, col){
+                    that.state[rowIndex][col] = this.status['lane'];
+                });
             }
         } else {
-            voidLeft = this.voidLength(rowIndex, col, 'left');
-            voidRight = this.voidLength(rowIndex, col, 'right');
+            voidLeft = this.voidLength(rowIndex, conqueringCoords[0], 'left');
+            voidRight = this.voidLength(rowIndex, conqueringCoords[0], 'right');
             if(voidLeft < voidRight) {
 
             } else if(voidRight < voidLeft){
@@ -75,15 +86,12 @@ define(function(){
         }
     }
     Matrix.prototype.layFoundation = function(){
+        var that = this;
         console.log('laying foundation!');
-        /*$.each(this.state, function(rowIndex, row) {
-            $.each(row, function(colIndex, col){
-                if (col === this.status['conquering']) {
-                    col = this.status['lane'];
-                    if (index >= this.cols) {};
-                }
-            });
-        });*/
+        $.each(this.state, function(rowIndex, row) {
+            console.log(rowIndex);
+            that.updateRow(rowIndex);
+        });
     }
     return Matrix;
 });
