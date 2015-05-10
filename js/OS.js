@@ -13,7 +13,7 @@ function($, Cursor, Matrix, Canvas){
         canvas: new Canvas(),
         init: function(cursorSize, cursorColor, matrixRows, matrixCols, matrixColor, canvasColor){
             this.matrix.init(matrixRows, matrixCols, matrixColor);
-            this.cursor.init(cursorSize, Math.floor(matrixRows/2), cursorColor);
+            this.cursor.init(cursorSize, Math.floor(matrixCols/2), cursorColor);
             this.canvas.init(matrixCols*cursorSize, matrixRows*cursorSize, canvasColor);
             this.bindControls();
 
@@ -21,24 +21,29 @@ function($, Cursor, Matrix, Canvas){
             this.drawCursor();
         },
         bindControls: function() {
+            //@2do: try an event oriented approach, because this logic is better placed in the Cursor object.
             var that = this,
                 gameKeyPressed = null;
             $(document).keydown(function(eventObj) {
                 gameKeyPressed = true;
                 switch(eventObj.which) {
                     case 37: //left arrow
+                    case 65: //A key
                         eventObj.preventDefault();
                         that.matrix = that.cursor.moveLeft(that.matrix);
                         break;
                     case 38: //up arrow
+                    case 87: //W key
                         eventObj.preventDefault();
                         that.matrix = that.cursor.moveUp(that.matrix);
                         break;
                     case 39: //right arrow
+                    case 68: //D key
                         eventObj.preventDefault();
                         that.matrix = that.cursor.moveRight(that.matrix);
                         break;
                     case 40: //down arrow
+                    case 83: //S key
                         eventObj.preventDefault();
                         that.matrix = that.cursor.moveDown(that.matrix);
                         break;

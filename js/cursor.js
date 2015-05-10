@@ -30,7 +30,7 @@ define(function(){
         };
     }
     Cursor.prototype.updatePosition = function(matrix, newX, newY){
-        if (matrix.state[newY]) {
+        try {
             switch (matrix.state[newY][newX]) {
                 case matrix.status['lane']:
                     //check if we're coming back to the lane from conquering
@@ -44,9 +44,10 @@ define(function(){
                     break;
                 case matrix.status['void']:
                     //check if we´re starting to conquer
-                    if (this.status.conquering.start.x === null) {
+                    if (this.status.conquering.start.y === null) {
                         this.status.conquering.start.x = this.position.x;
                         this.status.conquering.start.y = this.position.y;
+                        //@2do: check if it' s better to save the initial conquering position (vs lane position)
                     };
                     this.position.x = newX;
                     this.position.y = newY;
@@ -57,8 +58,12 @@ define(function(){
                     break;
                 case matrix.status['conquering']:
                     console.log('death by crash');
+                    //@2do: UI message: Oops! You seem to have crashed into yourself!
                     break;
             }
+        } catch (error){
+            console.error(error);
+            //@2do: UI message: Whopsy daisies! There seems to have occured an error on initialization time.
         };
         return matrix;
     }
