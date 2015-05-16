@@ -13,6 +13,14 @@ define(function(){
         canvas.width = width;
         canvas.height = height;
         this.clearCanvas();
+
+        var me = this;
+        //bind redraw event
+        $(document).bind('redrawCanvas', function(e, data){
+            me.clearCanvas();
+            me.drawMatrix(data.matrix, data.cursor.size);
+            me.drawCursor(data.cursor);
+        });
     }
     Canvas.prototype.clearCanvas = function(){
         var canvas = $('canvas')[0];
@@ -35,6 +43,29 @@ define(function(){
             ctx.fillStyle = color;
             ctx.fillRect(x, y, size, size);
         }
+    }
+    Canvas.prototype.drawMatrix = function(matrix, cursorSize){
+        var positionX = null,
+            positionY = null,
+            me = this;
+        $.each(matrix.state, function(key, row){
+            positionY = key*cursorSize;
+            $.each(row, function(key, col){
+                positionX = key*cursorSize;
+                if (col) {
+                    me.drawSquare(positionX,
+                        positionY,
+                        cursorSize,
+                        matrix.color);
+                }
+            });
+        });
+    }    
+    Canvas.prototype.drawCursor = function(cursor){
+        this.drawSquare(cursor.position.x*cursor.size,
+                        cursor.position.y*cursor.size,
+                        cursor.size,
+                        cursor.color);
     }
     return Canvas;
 });

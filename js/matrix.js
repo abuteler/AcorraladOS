@@ -30,6 +30,22 @@ define(function(){
             }
             this.state.push(row);
         }
+        var me = this;
+        //bind cursor move event
+        $(document).on('cursorMove', function(e, data){
+            console.log('ping: cursor moved!: '+data.x+', '+data.y);
+            var status = me.state[data.y][data.x];
+            $(document).trigger('matrixResponse', {
+                'status': status,
+                'newX': data.x,
+                'newY': data.y
+            });
+        });
+        //bind conquering event
+        $(document).on('conquering', function(e, data){
+            console.log('ping: conquering!: '+data.x+', '+data.y);
+            me.state[data.y][data.x] = me.status['conquering'];
+        });
     }
     Matrix.prototype.voidLength = function(rowIndex, colStart, direction){
         var colIndex = colStart,
@@ -81,7 +97,7 @@ define(function(){
             } else if(voidRight < voidLeft){
 
             } else {
-                console.log('@2do: defer');
+                // console.log('@2do: defer');
             }
         }
     }
@@ -92,6 +108,13 @@ define(function(){
             console.log(rowIndex);
             that.updateRow(rowIndex);
         });
+    }
+    Matrix.prototype.updateCellStatus = function(){
+        /* possible scenarios from the cell's point of view
+            1) the cell is enclosed between a lane and a conquering cell
+            2) the cell is enclosed between two conquering cells
+            3) the cell is enclosed by two lanes (advanced state of the game when closing a gap) 
+        */
     }
     return Matrix;
 });

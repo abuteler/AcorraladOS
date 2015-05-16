@@ -7,6 +7,12 @@ define(function(){
         this.status = {
             'conquering': null
         };
+        this.mapMatrixResponse = {
+            0: 'void',
+            1: 'lane',
+            2: 'conquering',
+            3: 'conquered'
+        };
     }
     Cursor.prototype.init = function(size, x, color){
         this.size = size;
@@ -25,38 +31,61 @@ define(function(){
                 'end': {
                     x: null,
                     y: null
-                }
+                },
+                'min-x': null,
+                'max-x': null,
+                'min-y': null,
+                'max-y': null
             }
         };
+        var me = this;
+        //bind cursor movement response
+        $(document).on('matrixResponse', function(e, data){
+            me.evaluateMovement(me.mapMatrixResponse[data.status], data.newX, data.newY);
+        });
     }
-    Cursor.prototype.updatePosition = function(matrix, newX, newY){
+    Cursor.prototype.evaluateMovement = function(status, newX, newY){
         try {
-            switch (matrix.state[newY][newX]) {
-                case matrix.status['lane']:
+            console.log(status);
+            console.log(this.status.conquering['min-x']);
+            console.log(this.status.conquering['max-x']);
+
+            switch (status) {
+                case 'lane':
                     //check if we're coming back to the lane from conquering
-                    if (matrix.state[this.position.y][this.position.x] === matrix.status['conquering']) {
+                    if (this.status.conquering.start.x) {
                         console.log('success!');
-                        matrix.layFoundation();
-                        //@2do: reset cursor.status
+                        $(document).trigger('layFoundation');
+                        this.resetCursorStatus();
                     }
                     this.position.x = newX;
                     this.position.y = newY;
                     break;
-                case matrix.status['void']:
+                case 'void':
                     //check if we´re starting to conquer
-                    if (this.status.conquering.start.y === null) {
-                        this.status.conquering.start.x = this.position.x;
-                        this.status.conquering.start.y = this.position.y;
-                        //@2do: check if it' s better to save the initial conquering position (vs lane position)
-                    };
+                    //Into the darkness... ^^
+                    if (this.status.conquering.start.x === null) {
+                        this.status.conquering.start.x = newX;
+                        this.status.conquering.start.y = newY;
+                    } else {
+                        //save the furthest coordinates from the conquering start position
+                        var deltaX = newX - this.status.conquering.start.x;
+                        if (deltaX > 0) {
+                            if(newX > this.status.conquering['max-x'])
+                                this.status.conquering['max-x'] = newX;
+                        } else if (deltaX < 0) {
+                            if(newX < this.status.conquering['min-x'] || this.status.conquering['min-x'] === null)
+                                this.status.conquering['min-x'] = newX;
+                        }
+                    }
+                    $(document).trigger('conquering', { x: newX, y: newY});
                     this.position.x = newX;
                     this.position.y = newY;
-                    matrix.state[newY][newX] = matrix.status['conquering'];
                     break;
-                case matrix.status['conquered']:
+                case 'conquered':
                     //ignores movement request
                     break;
-                case matrix.status['conquering']:
+                case 'conquering':
                     console.log('death by crash');
                     //@2do: UI message: Oops! You seem to have crashed into yourself!
                     break;
@@ -65,19 +94,40 @@ define(function(){
             console.error(error);
             //@2do: UI message: Whopsy daisies! There seems to have occured an error on initialization time.
         };
-        return matrix;
     }
-    Cursor.prototype.moveLeft = function(matrix){
-        return this.updatePosition(matrix, this.position.x-1, this.position.y);
+    Cursor.prototype.moveLeft = function(){
+        //trigger movement
+        $(document).trigger('cursorMove', { x: this.position.x-1, y: this.position.y});
     }
-    Cursor.prototype.moveRight = function(matrix){
-        return this.updatePosition(matrix, this.position.x+1, this.position.y);
+    Cursor.prototype.moveRight = function(){
+        //trigger movement
+        $(document).trigger('cursorMove', { x: this.position.x+1, y: this.position.y});
     }
-    Cursor.prototype.moveUp = function(matrix){
-        return this.updatePosition(matrix, this.position.x, this.position.y-1);
+    Cursor.prototype.moveUp = function(){
+        //trigger movement
+        $(document).trigger('cursorMove', { x: this.position.x, y: this.position.y-1});
     }
-    Cursor.prototype.moveDown = function(matrix){
-        return this.updatePosition(matrix, this.position.x, this.position.y+1);
+    Cursor.prototype.moveDown = function(){
+        //trigger movement
+        $(document).trigger('cursorMove', { x: this.position.x, y: this.position.y+1});
+    }
+    Cursor.prototype.resetCursorStatus = function(){
+        this.status = {
+            'conquering': {
+                'start': {
+                    x: null,
+                    y: null
+                },
+                'end': {
+                    x: null,
+                    y: null
+                },
+                'min-x': null,
+                'max-x': null,
+                'min-y': null,
+                'max-y': null
+            }
+        };
     }
     return Cursor;
 });

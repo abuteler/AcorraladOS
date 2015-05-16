@@ -17,12 +17,15 @@ function($, Cursor, Matrix, Canvas){
             this.canvas.init(matrixCols*cursorSize, matrixRows*cursorSize, canvasColor);
             this.bindControls();
 
-            this.drawMatrix();
-            this.drawCursor();
+            var me = this;
+            $(document).trigger('redrawCanvas', {
+                'matrix': me.matrix,
+                'cursor': me.cursor
+            });
         },
         bindControls: function() {
             //@2do: try an event oriented approach, because this logic is better placed in the Cursor object.
-            var that = this,
+            var me = this,
                 gameKeyPressed = null;
             $(document).keydown(function(eventObj) {
                 gameKeyPressed = true;
@@ -30,60 +33,39 @@ function($, Cursor, Matrix, Canvas){
                     case 37: //left arrow
                     case 65: //A key
                         eventObj.preventDefault();
-                        that.matrix = that.cursor.moveLeft(that.matrix);
+                        me.cursor.moveLeft(me.matrix);
                         break;
                     case 38: //up arrow
                     case 87: //W key
                         eventObj.preventDefault();
-                        that.matrix = that.cursor.moveUp(that.matrix);
+                        me.cursor.moveUp(me.matrix);
                         break;
                     case 39: //right arrow
                     case 68: //D key
                         eventObj.preventDefault();
-                        that.matrix = that.cursor.moveRight(that.matrix);
+                        me.cursor.moveRight(me.matrix);
                         break;
                     case 40: //down arrow
                     case 83: //S key
                         eventObj.preventDefault();
-                        that.matrix = that.cursor.moveDown(that.matrix);
+                        me.cursor.moveDown(me.matrix);
                         break;
                     default:
                         gameKeyPressed = false;
                         break;
                 };
                 if(gameKeyPressed) {
-                    that.canvas.clearCanvas();
-                    that.drawMatrix();
-                    that.drawCursor();
+                    $(document).trigger('redrawCanvas', {
+                        'matrix': me.matrix,
+                        'cursor': me.cursor
+                    });
                 }
             });
-        },
-        drawMatrix: function(){
-            var positionX = null,
-                positionY = null,
-                that = this;
-            $.each(this.matrix.state, function(key, row){
-                positionY = key*that.cursor.size;
-                $.each(row, function(key, col){
-                    positionX = key*that.cursor.size;
-                    if (col) {
-                        that.canvas.drawSquare(positionX,
-                            positionY,
-                            that.cursor.size,
-                            that.matrix.color);
-                    }
-                });
-            });
-        },
-        drawCursor: function(){
-            this.canvas.drawSquare(this.cursor.position.x*this.cursor.size,
-                            this.cursor.position.y*this.cursor.size,
-                            this.cursor.size,
-                            this.cursor.color);
         }
     }
 
     $(document).ready(function(){
         OS.init(9, 'rgb(255, 255, 0)', 40, 70, 'rgb(120,120,0)', 'rgb(0,0,0)');
+        window.os = OS;
     });
 });
