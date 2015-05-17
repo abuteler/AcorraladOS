@@ -2,7 +2,6 @@ define(function(){
     var Matrix = function(){
         this.rows = null;
         this.cols = null;
-        this.color = null;
         this.state = [];
         this.status = {
             'void': 0,
@@ -11,10 +10,9 @@ define(function(){
             'conquered': 3
         };
     }
-    Matrix.prototype.init = function(rows, cols, color){
+    Matrix.prototype.init = function(rows, cols){
         this.rows = rows;
         this.cols = cols;
-        this.color = color;
         for (var i = 0; i < rows; i++) {
             var row = [];
             for (var j = 0; j < cols; j++) {
@@ -33,7 +31,6 @@ define(function(){
         var me = this;
         //bind cursor move event
         $(document).on('cursorMove', function(e, data){
-            console.log('ping: cursor moved!: '+data.x+', '+data.y);
             var status = me.state[data.y][data.x];
             $(document).trigger('matrixResponse', {
                 'status': status,
@@ -43,8 +40,11 @@ define(function(){
         });
         //bind conquering event
         $(document).on('conquering', function(e, data){
-            console.log('ping: conquering!: '+data.x+', '+data.y);
             me.state[data.y][data.x] = me.status['conquering'];
+        });
+        //bind back to lane event
+        $(document).on('layFoundation', function(e, data){
+            me.layFoundation(data);
         });
     }
     Matrix.prototype.voidLength = function(rowIndex, colStart, direction){
@@ -64,13 +64,13 @@ define(function(){
         return length;
     }
     Matrix.prototype.updateRow = function(rowIndex){
-        var that = this,
+        var me = this,
             conqueringCoords = [],
             voidLeft = null,
             voidRight = null;
         //check for conquering coords
         $.each(this.state[rowIndex], function(index, col) {
-            if (col === that.status['conquering']) {
+            if (col === me.status['conquering']) {
                 conqueringCoords.push(index);
             };
         });
@@ -86,7 +86,7 @@ define(function(){
             } else {
                 //I assume it's the bottom line of conquering cells
                 $.each(conqueringCoords, function(index, col){
-                    that.state[rowIndex][col] = this.status['lane'];
+                    me.state[rowIndex][col] = this.status['lane'];
                 });
             }
         } else {
@@ -101,20 +101,25 @@ define(function(){
             }
         }
     }
-    Matrix.prototype.layFoundation = function(){
-        var that = this;
+    Matrix.prototype.layFoundation = function(conquerData){
         console.log('laying foundation!');
-        $.each(this.state, function(rowIndex, row) {
-            console.log(rowIndex);
-            that.updateRow(rowIndex);
-        });
+        for (var i = conquerData['min-y']; i <= conquerData['max-y']; i++) {
+            for (var j = conquerData['min-x']; j <= conquerData['max-x']; j++) {
+                // console.log(this.state[i][j]);
+                this.transformCell(this.state[i][j], conquerData);
+            };
+        };
     }
-    Matrix.prototype.updateCellStatus = function(){
+    Matrix.prototype.transformCell = function(cell, conquerData){
         /* possible scenarios from the cell's point of view
             1) the cell is enclosed between a lane and a conquering cell
             2) the cell is enclosed between two conquering cells
             3) the cell is enclosed by two lanes (advanced state of the game when closing a gap) 
         */
+        console.log(cell);
+        if (cell === this.status['conquering']) {
+            cell = this.status['lane'];
+        };
     }
     return Matrix;
 });

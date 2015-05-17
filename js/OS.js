@@ -11,10 +11,10 @@ function($, Cursor, Matrix, Canvas){
         cursor: new Cursor(),
         matrix: new Matrix(),
         canvas: new Canvas(),
-        init: function(cursorSize, cursorColor, matrixRows, matrixCols, matrixColor, canvasColor){
-            this.matrix.init(matrixRows, matrixCols, matrixColor);
-            this.cursor.init(cursorSize, Math.floor(matrixCols/2), cursorColor);
-            this.canvas.init(matrixCols*cursorSize, matrixRows*cursorSize, canvasColor);
+        init: function(cursorSize, matrixRows, matrixCols, colors){
+            this.matrix.init(matrixRows, matrixCols);
+            this.cursor.init(cursorSize, Math.floor(matrixCols/2));
+            this.canvas.init(matrixCols*cursorSize, matrixRows*cursorSize, colors);
             this.bindControls();
 
             var me = this;
@@ -33,22 +33,22 @@ function($, Cursor, Matrix, Canvas){
                     case 37: //left arrow
                     case 65: //A key
                         eventObj.preventDefault();
-                        me.cursor.moveLeft(me.matrix);
+                        me.cursor.moveLeft();
                         break;
                     case 38: //up arrow
                     case 87: //W key
                         eventObj.preventDefault();
-                        me.cursor.moveUp(me.matrix);
+                        me.cursor.moveUp();
                         break;
                     case 39: //right arrow
                     case 68: //D key
                         eventObj.preventDefault();
-                        me.cursor.moveRight(me.matrix);
+                        me.cursor.moveRight();
                         break;
                     case 40: //down arrow
                     case 83: //S key
                         eventObj.preventDefault();
-                        me.cursor.moveDown(me.matrix);
+                        me.cursor.moveDown();
                         break;
                     default:
                         gameKeyPressed = false;
@@ -65,7 +65,18 @@ function($, Cursor, Matrix, Canvas){
     }
 
     $(document).ready(function(){
-        OS.init(9, 'rgb(255, 255, 0)', 40, 70, 'rgb(120,120,0)', 'rgb(0,0,0)');
+        //colors are arrays to be able to do sets, and change colors according to level or by selection from the UI
+        var cursorSize = 9,
+            matrixRows = 40,
+            matrixCols = 70,
+            colors = {
+                'cursor': ['rgb(255,0,0)'],
+                'void': ['rgb(0,0,0)'],
+                'lane': ['rgb(120,120,0)'],
+                'conquering': ['rgb(255,160,0)'],
+                'conquered': ['rgba(255,160,0,0.5)']
+            };
+        OS.init(cursorSize, matrixRows, matrixCols, colors);
         window.os = OS;
     });
 });

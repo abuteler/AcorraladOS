@@ -2,12 +2,12 @@ define(function(){
     var Canvas = function(){
         this.width = null;
         this.height = null;
-        this.color = null;
+        this.colors = null;
     }
-    Canvas.prototype.init = function(width, height, color){
+    Canvas.prototype.init = function(width, height, colors){
         this.width = width;
         this.height = height;
-        this.color = color;
+        this.colors = colors;
 
         var canvas = $('canvas')[0];
         canvas.width = width;
@@ -29,7 +29,7 @@ define(function(){
         } else {
             ctx = canvas.getContext('2d');
             //clear the canvas
-            ctx.fillStyle = this.color;
+            ctx.fillStyle = this.colors['void'];
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
     }
@@ -47,17 +47,31 @@ define(function(){
     Canvas.prototype.drawMatrix = function(matrix, cursorSize){
         var positionX = null,
             positionY = null,
+            color = null,
             me = this;
         $.each(matrix.state, function(key, row){
             positionY = key*cursorSize;
             $.each(row, function(key, col){
                 positionX = key*cursorSize;
-                if (col) {
-                    me.drawSquare(positionX,
-                        positionY,
-                        cursorSize,
-                        matrix.color);
+                switch (col) {
+                    case 0:
+                        color = me.colors["void"];
+                        break;
+                    case 1:
+                        color = me.colors["lane"];
+                        break;
+                    case 2:
+                        color = me.colors["conquering"];
+                        break;
+                    case 3:
+                        color = me.colors["conquered"];
+                        break;
                 }
+                me.drawSquare(positionX,
+                    positionY,
+                    cursorSize,
+                    color
+                );
             });
         });
     }    
@@ -65,7 +79,7 @@ define(function(){
         this.drawSquare(cursor.position.x*cursor.size,
                         cursor.position.y*cursor.size,
                         cursor.size,
-                        cursor.color);
+                        this.colors.cursor);
     }
     return Canvas;
 });
