@@ -47,79 +47,54 @@ define(function(){
             me.layFoundation(data);
         });
     }
-    Matrix.prototype.voidLength = function(rowIndex, colStart, direction){
-        var colIndex = colStart,
-            length = 0;        
-        do {
-            switch (direction) {
-                case 'left':
-                    colIndex -= 1;
-                    break;
-                case 'right':
-                    colIndex += 1;
-                    break;
-            }
-            length += 1;
-        } while (this.state[rowIndex][colIndex] = this.status["void"]);
-        return length;
-    }
-    Matrix.prototype.updateRow = function(rowIndex){
-        var me = this,
-            conqueringCoords = [],
-            voidLeft = null,
-            voidRight = null;
-        //check for conquering coords
-        $.each(this.state[rowIndex], function(index, col) {
-            if (col === me.status['conquering']) {
-                conqueringCoords.push(index);
-            };
-        });
-        if (conqueringCoords.length > 1) {
-            if(conqueringCoords.length = 2) {
-                for (var i = conqueringCoords[0]; i <= conqueringCoords[1]; i++) {
-                    if(i == conqueringCoords[0] || i === conqueringCoords[1]){
-                        this.state[rowIndex][i] = this.status['lane'];
-                    } else {
-                        this.state[rowIndex][i] = this.status['conquered'];
-                    }
-                }
-            } else {
-                //I assume it's the bottom line of conquering cells
-                $.each(conqueringCoords, function(index, col){
-                    me.state[rowIndex][col] = this.status['lane'];
-                });
-            }
-        } else {
-            voidLeft = this.voidLength(rowIndex, conqueringCoords[0], 'left');
-            voidRight = this.voidLength(rowIndex, conqueringCoords[0], 'right');
-            if(voidLeft < voidRight) {
-
-            } else if(voidRight < voidLeft){
-
-            } else {
-                // console.log('@2do: defer');
-            }
-        }
-    }
     Matrix.prototype.layFoundation = function(conquerData){
         console.log('laying foundation!');
         for (var i = conquerData['min-y']; i <= conquerData['max-y']; i++) {
             for (var j = conquerData['min-x']; j <= conquerData['max-x']; j++) {
-                // console.log(this.state[i][j]);
-                this.transformCell(this.state[i][j], conquerData);
+                this.transformCell(j, i, conquerData);
             };
         };
     }
-    Matrix.prototype.transformCell = function(cell, conquerData){
-        /* possible scenarios from the cell's point of view
-            1) the cell is enclosed between a lane and a conquering cell
-            2) the cell is enclosed between two conquering cells
-            3) the cell is enclosed by two lanes (advanced state of the game when closing a gap) 
-        */
-        console.log(cell);
-        if (cell === this.status['conquering']) {
-            cell = this.status['lane'];
+    Matrix.prototype.transformCell = function(x, y, conquerData){
+        if (this.state[y][x] === this.status['conquering']) {
+            this.state[y][x] = this.status['lane'];
+        } else {
+            if (this.state[y][x] === this.status['lane']) {
+                //mmm... leave these be?
+            } else {
+                //deal with the void
+                /* possible scenarios from the cell's point of view
+                    1) the cell is enclosed between a lane and a conquering cell
+                    2) the cell is enclosed between two conquering cells
+                    3) the cell is enclosed by two lanes (advanced state of the game when closing a gap) 
+                */
+                var enclosedLeft = this.evaluateCellBoundaries(x, y, 'left', conquerData),
+                    enclosedRight = this.evaluateCellBoundaries(x, y, 'right', conquerData),
+                    boundByTotal = enclosedLeft.concat(enclosedRight);
+                if (boundByTotal.length > 1) {
+                    this.state[y][x] = this.status['conquered'];
+                } else {
+                    console.log('x: '+x);
+                    console.log(boundByTotal);
+
+                }
+            }
         };
+    }
+    Matrix.prototype.evaluateCellBoundaries = function(x, y, direction, conquerData){
+        var currentX = x,
+            hitLimit = false,
+            boundBy = [],
+            limit = (direction === 'left') ? conquerData['min-x'] : conquerData['max-x'];
+        do {
+            if (this.state[y][currentX] === 1 || this.state[y][currentX] === 2 ) {
+                boundBy.push(this.state[y][currentX]);
+            }
+            hitLimit = currentX === limit;
+            currentX = (direction === 'left') ? currentX-1 : currentX+1;
+        } while (hitLimit === false);
+
+        return boundBy;
     }
     return Matrix;
 });

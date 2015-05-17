@@ -72,7 +72,7 @@ function($, Cursor, Matrix, Canvas){
             colors = {
                 'cursor': ['rgb(255,0,0)'],
                 'void': ['rgb(0,0,0)'],
-                'lane': ['rgb(120,120,0)'],
+                'lane': ['rgb(160,160,0)'],
                 'conquering': ['rgb(255,160,0)'],
                 'conquered': ['rgba(255,160,0,0.5)']
             };
