@@ -69,14 +69,16 @@ define(function(){
                     3) the cell is enclosed by two lanes (advanced state of the game when closing a gap) 
                 */
                 var enclosedLeft = this.evaluateCellBoundaries(x, y, 'left', conquerData),
-                    enclosedRight = this.evaluateCellBoundaries(x, y, 'right', conquerData),
-                    boundByTotal = enclosedLeft.concat(enclosedRight);
-                if (boundByTotal.length > 1) {
+                    enclosedRight = this.evaluateCellBoundaries(x, y, 'right', conquerData);
+                if (enclosedLeft.length > 0 && enclosedRight.length > 0) {
                     this.state[y][x] = this.status['conquered'];
-                } else {
-                    console.log('x: '+x);
-                    console.log(boundByTotal);
-
+                    /* DISCLAIMER \*
+                    /* This logic leaves 1 scenario where the user closes a gap between two towers
+                       and the newly enclosed void surface remains void, and a 2nd scenario where rare
+                       shapes colors some void they shouldn't, that I'm, for now, leaving as design.
+                       So let's get to those balls then. :)
+                       17 de Mayo, 2015
+                    */
                 }
             }
         };

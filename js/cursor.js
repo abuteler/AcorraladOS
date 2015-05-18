@@ -42,11 +42,10 @@ define(function(){
     }
     Cursor.prototype.evaluateMovement = function(status, newX, newY){
         try {
-            console.log(status);
             switch (status) {
                 case 'lane':
                     //check if we're coming back to the lane from conquering
-                    if (this.status.conquering['min-x']) {
+                    if (this.status.conquering['min-x'] !== null) {
                         //update min and max coordinates with last position
                         if (newX > this.status.conquering['max-x']) {
                             this.status.conquering['max-x'] = newX;
