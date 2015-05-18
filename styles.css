@@ -1,0 +1,34 @@
+/* Note: 
+ * I'm using a compiler to compile this less file to the styles.css file in the index.html level.
+*/
+body {
+  background-color: black;
+  color: white;
+}
+body header {
+  position: relative;
+}
+body header h1 {
+  margin: 0;
+  font-size: 21px;
+  position: absolute;
+  top: 16px;
+  left: 42px;
+}
+body header img {
+  margin-top: 20px;
+}
+body header span {
+  margin: 0;
+  font-size: 21px;
+  position: absolute;
+  top: 135px;
+  left: 56px;
+}
+body header span.second {
+  left: 151px;
+}
+body section#play {
+  width: 36%;
+  margin: 0 auto;
+}
