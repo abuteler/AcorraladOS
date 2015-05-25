@@ -5,23 +5,26 @@ requirejs.config({
     }
 });
 
-requirejs(['jquery', 'cursor', 'matrix', 'canvas'],
-function($, Cursor, Matrix, Canvas){
+requirejs(['jquery', 'cursor', 'matrix', 'canvas', 'bouncers'],
+function($, Cursor, Matrix, Canvas, Bouncers){
     var OS = {
         cursor: new Cursor(),
         matrix: new Matrix(),
         canvas: new Canvas(),
-        init: function(cursorSize, matrixRows, matrixCols, colors){
-            this.matrix.init(matrixRows, matrixCols);
-            this.cursor.init(cursorSize, Math.floor(matrixCols/2));
-            this.canvas.init(matrixCols*cursorSize, matrixRows*cursorSize, colors);
+        bouncers: new Bouncers(),
+        initialize: function(cursorSize, ballSize, matrixRows, matrixCols, colors){
+            this.matrix.initialize(matrixRows, matrixCols);
+            this.cursor.initialize(cursorSize, Math.floor(matrixCols/2));
+            this.canvas.initialize(matrixCols*cursorSize, matrixRows*cursorSize, colors);
             this.bindControls();
-
-            var me = this;
-            $(document).trigger('redrawCanvas', {
-                'matrix': me.matrix,
-                'cursor': me.cursor
-            });
+            var me = this,
+                usrLvl = 1,
+                refreshInterval = 100;
+            //@2Do: implement user level
+            this.bouncers.initialize(3, ballSize, matrixRows, matrixCols, usrLvl, refreshInterval);
+            this.clock = setInterval(function(){
+                me.triggerRedrawCanvas();
+            }, refreshInterval);
         },
         bindControls: function() {
             //@2do: try an event oriented approach, because this logic is better placed in the Cursor object.
@@ -55,11 +58,16 @@ function($, Cursor, Matrix, Canvas){
                         break;
                 };
                 if(gameKeyPressed) {
-                    $(document).trigger('redrawCanvas', {
-                        'matrix': me.matrix,
-                        'cursor': me.cursor
-                    });
+                    me.triggerRedrawCanvas();
                 }
+            });
+        },
+        triggerRedrawCanvas: function () {
+            var me = this;
+            $(document).trigger('redrawCanvas', {
+                'matrix': me.matrix,
+                'cursor': me.cursor,
+                'bouncers': me.bouncers
             });
         }
     }
@@ -67,6 +75,7 @@ function($, Cursor, Matrix, Canvas){
     $(document).ready(function(){
         //colors are arrays to be able to do sets, and change colors according to level or by selection from the UI
         var cursorSize = 9,
+            ballSize = 9,
             matrixRows = 40,
             matrixCols = 70,
             colors = {
@@ -74,9 +83,10 @@ function($, Cursor, Matrix, Canvas){
                 'void': ['rgb(0,0,0)'],
                 'lane': ['rgb(160,160,0)'],
                 'conquering': ['rgb(255,160,0)'],
-                'conquered': ['rgba(255,160,0,0.5)']
+                'conquered': ['rgba(255,160,0,0.5)'],
+                'bouncers': ['rgb(255,255,255)']
             };
-        OS.init(cursorSize, matrixRows, matrixCols, colors);
+        OS.initialize(cursorSize, ballSize, matrixRows, matrixCols, colors);
         window.os = OS;
     });
 });

@@ -4,7 +4,7 @@ define(function(){
         this.height = null;
         this.colors = null;
     }
-    Canvas.prototype.init = function(width, height, colors){
+    Canvas.prototype.initialize = function(width, height, colors){
         this.width = width;
         this.height = height;
         this.colors = colors;
@@ -20,6 +20,7 @@ define(function(){
             me.clearCanvas();
             me.drawMatrix(data.matrix, data.cursor.size);
             me.drawCursor(data.cursor);
+            me.drawBouncers(data.bouncers);
         });
     }
     Canvas.prototype.clearCanvas = function(){
@@ -80,6 +81,16 @@ define(function(){
                         cursor.position.y*cursor.size,
                         cursor.size,
                         this.colors.cursor);
+    }
+    Canvas.prototype.drawBouncers = function(bouncers){
+        // console.log(bouncers.balls[0]);
+        var me = this;
+        $.each(bouncers.balls, function(key, ball){
+            me.drawSquare(ball.position.x*ball.size,
+                            ball.position.y*ball.size,
+                            ball.size,
+                            me.colors.bouncers);
+        });
     }
     return Canvas;
 });

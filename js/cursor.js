@@ -1,4 +1,4 @@
-define(function(){
+define(['./utils'], function(Utils){
     var Cursor = function(){
         this.position = null
         this.size = null;
@@ -6,14 +6,8 @@ define(function(){
         this.status = {
             'conquering': null
         };
-        this.mapMatrixResponse = {
-            0: 'void',
-            1: 'lane',
-            2: 'conquering',
-            3: 'conquered'
-        };
     }
-    Cursor.prototype.init = function(size, x){
+    Cursor.prototype.initialize = function(size, x){
         this.size = size;
         this.acceleration = size;
         this.position = {
@@ -30,8 +24,8 @@ define(function(){
         };
         var me = this;
         //bind cursor movement response
-        $(document).on('matrixResponse', function(e, data){
-            me.evaluateMovement(me.mapMatrixResponse[data.status], data.newX, data.newY);
+        $(document).on('matrixCursorResponse', function(e, data){
+            me.evaluateMovement(Utils.mapMatrixStatusResponse[data.status], data.newX, data.newY);
         });
     }
     Cursor.prototype.initializeConquer = function(){
@@ -43,29 +37,6 @@ define(function(){
     Cursor.prototype.evaluateMovement = function(status, newX, newY){
         try {
             switch (status) {
-                case 'lane':
-                    //check if we're coming back to the lane from conquering
-                    if (this.status.conquering['min-x'] !== null) {
-                        //update min and max coordinates with last position
-                        if (newX > this.status.conquering['max-x']) {
-                            this.status.conquering['max-x'] = newX;
-                        };
-                        if (newX < this.status.conquering['min-x']) {
-                            this.status.conquering['min-x'] = newX;
-                        };
-                        if (newY > this.status.conquering['max-y']) {
-                            this.status.conquering['max-y'] = newY;
-                        };
-                        if (newY < this.status.conquering['min-y']) {
-                            this.status.conquering['min-y'] = newY;
-                        };
-
-                        $(document).trigger('layFoundation', this.status.conquering);
-                        this.resetCursorStatus();
-                    }
-                    this.position.x = newX;
-                    this.position.y = newY;
-                    break;
                 case 'void':
                     //check if we´re starting to conquer
                     //Into the darkness... ^^
@@ -90,12 +61,35 @@ define(function(){
                     this.position.x = newX;
                     this.position.y = newY;
                     break;
-                case 'conquered':
-                    //ignores movement request
+                case 'lane':
+                    //check if we're coming back to the lane from conquering
+                    if (this.status.conquering['min-x'] !== null) {
+                        //update min and max coordinates with last position
+                        if (newX > this.status.conquering['max-x']) {
+                            this.status.conquering['max-x'] = newX;
+                        };
+                        if (newX < this.status.conquering['min-x']) {
+                            this.status.conquering['min-x'] = newX;
+                        };
+                        if (newY > this.status.conquering['max-y']) {
+                            this.status.conquering['max-y'] = newY;
+                        };
+                        if (newY < this.status.conquering['min-y']) {
+                            this.status.conquering['min-y'] = newY;
+                        };
+
+                        $(document).trigger('layFoundation', this.status.conquering);
+                        this.resetCursorStatus();
+                    }
+                    this.position.x = newX;
+                    this.position.y = newY;
                     break;
                 case 'conquering':
                     console.log('death by crash');
                     //@2do: UI message: Oops! You seem to have crashed into yourself!
+                    break;
+                case 'conquered':
+                    //ignores movement request
                     break;
             }
         } catch (error){

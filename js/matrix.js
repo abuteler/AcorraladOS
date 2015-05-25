@@ -10,7 +10,7 @@ define(function(){
             'conquered': 3
         };
     }
-    Matrix.prototype.init = function(rows, cols){
+    Matrix.prototype.initialize = function(rows, cols){
         this.rows = rows;
         this.cols = cols;
         for (var i = 0; i < rows; i++) {
@@ -28,23 +28,47 @@ define(function(){
             }
             this.state.push(row);
         }
+        this.bindCursorEvents();
+        this.bindBallEvents();
+    }
+    Matrix.prototype.bindCursorEvents = function(){
         var me = this;
         //bind cursor move event
         $(document).on('cursorMove', function(e, data){
             var status = me.state[data.y][data.x];
-            $(document).trigger('matrixResponse', {
+            $(document).trigger('matrixCursorResponse', {
                 'status': status,
                 'newX': data.x,
                 'newY': data.y
             });
         });
-        //bind conquering event
+        //bind cursor conquering event
         $(document).on('conquering', function(e, data){
             me.state[data.y][data.x] = me.status['conquering'];
         });
-        //bind back to lane event
+        //bind cursor back to lane event
         $(document).on('layFoundation', function(e, data){
             me.layFoundation(data);
+        });
+    }
+    Matrix.prototype.bindBallEvents = function(){
+        var me = this;
+        //bind cursor move event
+        $(document).on('ballMoved', function(e, data){
+            if(data.x > me.cols-1 || data.x < 0 ||
+                data.y > me.rows-1 || data.y < 0 ){
+                $(document).trigger('matrixBallResponse', {
+                    'id': data.id,
+                    'status': undefined
+                });
+                console.error(data);
+            } else {
+                var status = me.state[data.y][data.x];
+                $(document).trigger('matrixBallResponse', {
+                    'id': data.id,
+                    'status': status
+                });
+            }
         });
     }
     Matrix.prototype.layFoundation = function(conquerData){
