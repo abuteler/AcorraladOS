@@ -22,40 +22,41 @@ define(['./utils'], function(Utils){
                     console.log(me);
                     clearInterval(me.clock);
                 } else {
-                    me.evaluateMovement(Utils.mapMatrixStatusResponse[data.status]);
+                    me.evaluateMovement(Utils.mapMatrixStatusResponse[data.status], data.boundary);
                 }
             }
         });
     }
-    Ball.prototype.deflectDirection = function (direction) {
+    Ball.prototype.deflectDirection = function (direction, boundary) {
         switch (direction) {
             case 1:
                 //top-right
-                direction += 1; //top-left
+                /* it can bounce on the top or right boundary */
+                direction = (boundary === 'top') ? 2 : 4;
                 break;
             case 2:
                 //right-bottom
-                direction += 1; //bottom-left
+                direction = (boundary === 'right') ? 3 : 1;
                 break;
             case 3:
                 //bottom-left
-                direction += 1; //top-left
+                direction = (boundary === 'bottom') ? 4 : 2;
                 break;
             case 4:
                 //left-top
-                direction = 1; //top-left
+                direction = (boundary === 'left') ? 1 : 3;
                 break;
         }
 
         return direction;
     }
-    Ball.prototype.evaluateMovement = function (status) {
+    Ball.prototype.evaluateMovement = function (status, boundary) {
         switch(status){
             case 'void':
                 //go on little one
                 break;
             case 'lane':
-                this.direction = this.deflectDirection(this.direction);
+                this.direction = this.deflectDirection(this.direction, boundary);
                 // clearInterval(this.clock);
                 break;
             case 'conquering':
@@ -98,7 +99,8 @@ define(['./utils'], function(Utils){
         $(document).trigger('ballMoved', {
             id: this.id,
             x: this.position.x,
-            y: this.position.y
+            y: this.position.y,
+            direction: this.direction
         });
     }
 
