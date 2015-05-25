@@ -35,7 +35,7 @@ define(function(){
         var me = this;
         //bind cursor move event
         $(document).on('cursorMove', function(e, data){
-            var status = me.state[data.y][data.x];
+            var status = me.state[data.y] && me.state[data.y][data.x];
             $(document).trigger('matrixCursorResponse', {
                 'status': status,
                 'newX': data.x,
@@ -63,16 +63,21 @@ define(function(){
                 });
                 console.error(data);
             } else {
-                var status = me.state[data.y][data.x];
+                var status = me.state[data.y][data.x],
+                    boundary = null;
+                if (status === me.status['lane']) {
+                    //evaluate boundaries
+                    boundary = me.evaluateBallBoundaries(data.x, data.y, data.direction);
+                }
                 $(document).trigger('matrixBallResponse', {
                     'id': data.id,
-                    'status': status
+                    'status': status,
+                    'boundary': boundary
                 });
             }
         });
     }
     Matrix.prototype.layFoundation = function(conquerData){
-        console.log('laying foundation!');
         for (var i = conquerData['min-y']; i <= conquerData['max-y']; i++) {
             for (var j = conquerData['min-x']; j <= conquerData['max-x']; j++) {
                 this.transformCell(j, i, conquerData);
@@ -122,5 +127,48 @@ define(function(){
 
         return boundBy;
     }
+    Matrix.prototype.evaluateBallBoundaries = function(x, y, direction){
+        var boundary = null;
+        switch (direction) {
+            case 1:
+                //top-right
+                if (y-1 < 0 || 
+                        this.state[y-1][x] === this.status['conquered'] ) {
+                    boundary = 'top';
+                } else {
+                    boundary = 'right';
+                }
+                break;
+            case 2:
+                //right-bottom
+                if (y+1 > this.rows-1 || 
+                        this.state[y+1][x] === this.status['conquered'] ) {
+                    boundary = 'bottom';
+                } else {
+                    boundary = 'right';
+                }
+                break;
+            case 3:
+                //bottom-left
+                if (y+1 > this.rows-1 || 
+                        this.state[y+1][x] === this.status['conquered'] ) {
+                    boundary = 'bottom';
+                } else {
+                    boundary = 'left';
+                }
+                break;
+            case 4:
+                //left-top
+                if (y-1 < 0 || 
+                        this.state[y-1][x] === this.status['conquered'] ) {
+                    boundary = 'top';
+                } else {
+                    boundary = 'left';
+                }
+                break;
+        }
+        return boundary;
+    }
+
     return Matrix;
 });
